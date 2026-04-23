@@ -52,11 +52,14 @@ export default function App() {
 
   const deleteTodo = (id) => setTodos(todos.filter((t) => t.id !== id))
 
+  const clearCompleted = () => setTodos(todos.filter((t) => !t.done))
+
   const visible = todos.filter((t) =>
     filter === 'active' ? !t.done : filter === 'completed' ? t.done : true,
   )
 
   const remaining = todos.filter((t) => !t.done).length
+  const completed = todos.length - remaining
 
   const tabClass = (name) =>
     `px-3 py-1 rounded-md text-sm font-medium transition ${filter === name
@@ -143,8 +146,17 @@ export default function App() {
           )}
         </ul>
 
-        <div className="mt-4 text-sm text-slate-500">
-          {remaining} {remaining === 1 ? 'item' : 'items'} left
+        <div className="mt-4 flex items-center justify-between gap-3 text-sm text-slate-500">
+          <span>
+            {remaining} {remaining === 1 ? 'item' : 'items'} left
+          </span>
+          <button
+            onClick={clearCompleted}
+            disabled={completed === 0}
+            className="rounded-md px-3 py-1 font-medium text-slate-600 transition enabled:hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-300"
+          >
+            Clear completed
+          </button>
         </div>
       </div>
     </div>
