@@ -8,6 +8,37 @@ export default function App() {
   ])
   const [input, setInput] = useState('')
   const [filter, setFilter] = useState('all')
+  const [editingId, setEditingId] = useState(null)
+  const [editingText, setEditingText] = useState('')
+
+  const startEditing = (todo) => {
+    setEditingId(todo.id)
+    setEditingText(todo.text)
+  }
+
+  const saveEditing = () => {
+    const text = editingText.trim()
+
+    if (text === '') {
+      // empty → delete
+      setTodos(todos.filter((t) => t.id !== editingId))
+    } else {
+      // save
+      setTodos(
+        todos.map((t) =>
+          t.id === editingId ? { ...t, text } : t
+        )
+      )
+    }
+
+    setEditingId(null)
+    setEditingText('')
+  }
+
+  const cancelEditing = () => {
+    setEditingId(null)
+    setEditingText('')
+  }
 
   const addTodo = () => {
     const text = input.trim()
@@ -28,10 +59,9 @@ export default function App() {
   const remaining = todos.filter((t) => !t.done).length
 
   const tabClass = (name) =>
-    `px-3 py-1 rounded-md text-sm font-medium transition ${
-      filter === name
-        ? 'bg-indigo-600 text-white'
-        : 'text-slate-600 hover:bg-slate-200'
+    `px-3 py-1 rounded-md text-sm font-medium transition ${filter === name
+      ? 'bg-indigo-600 text-white'
+      : 'text-slate-600 hover:bg-slate-200'
     }`
 
   return (
@@ -73,15 +103,30 @@ export default function App() {
             <li
               key={todo.id}
               className="flex items-center gap-3 px-3 py-2 rounded-md border border-slate-200 hover:bg-slate-50"
+              onDoubleClick={() => startEditing(todo)}
             >
-              <button
-                onClick={() => toggleTodo(todo.id)}
-                className={`flex-1 text-left ${
-                  todo.done ? 'line-through text-slate-400' : 'text-slate-800'
-                }`}
-              >
-                {todo.text}
-              </button>
+              {editingId === todo.id ? (
+                <input
+                  autoFocus
+                  value={editingText}
+                  onChange={(e) => setEditingText(e.target.value)}
+                  onBlur={saveEditing}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveEditing()
+                    if (e.key === 'Escape') cancelEditing()
+                  }}
+                  className="flex-1 px-2 py-1 border border-slate-300 rounded"
+                />
+              ) : (
+                <button
+                  onClick={() => toggleTodo(todo.id)}
+                  className={`flex-1 text-left ${todo.done ? 'line-through text-slate-400' : 'text-slate-800'
+                    }`}
+                >
+                  {todo.text}
+                </button>
+              )}
+
               <button
                 onClick={() => deleteTodo(todo.id)}
                 className="text-slate-400 hover:text-red-500 text-lg font-bold px-2"
