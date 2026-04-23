@@ -10,11 +10,30 @@ export default function App() {
   const [filter, setFilter] = useState('all')
   const [editingId, setEditingId] = useState(null)
   const [editingText, setEditingText] = useState('')
+  const [lastEnterTime, setLastEnterTime] = useState(0)
 
   const startEditing = (todo) => {
     setEditingId(todo.id)
     setEditingText(todo.text)
   }
+const handleTodoKeyDown = (e, todo) => {
+  if (e.key !== 'Enter') return
+
+  // If this todo is currently being edited, do NOT treat Enter as a toggle or double-enter
+  if (editingId === todo.id) return
+
+  const now = Date.now()
+  const delta = now - lastEnterTime
+
+  if (delta < 300) {
+    startEditing(todo)
+  } else {
+    toggleTodo(todo.id)
+  }
+
+  setLastEnterTime(now)
+}
+
 
   const saveEditing = () => {
     const text = editingText.trim()
@@ -105,8 +124,10 @@ export default function App() {
           {visible.map((todo) => (
             <li
               key={todo.id}
-              className="flex items-center gap-3 px-3 py-2 rounded-md border border-slate-200 hover:bg-slate-50"
+              tabIndex={0}
               onDoubleClick={() => startEditing(todo)}
+              onKeyDown={(e) => handleTodoKeyDown(e, todo)}
+              className="flex items-center gap-3 px-3 py-2 rounded-md border border-slate-200 hover:bg-slate-50 focus:ring-2 focus:ring-indigo-500"
             >
               {editingId === todo.id ? (
                 <input
